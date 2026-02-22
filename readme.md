@@ -1,4 +1,4 @@
-# DevTinder APIs
+# NexDev APIs
 
 ## authRouter
 
@@ -10,7 +10,7 @@
 
 - GET /profile/view
 - PATCH /profile/edit
-- PATCH /profile/password // Forgot password API
+- PATCH /profile/changepassword // Forgot password API
 
 ## connectionRequestRouter
 
@@ -23,4 +23,5 @@
 - GET /user/connections
 - GET /user/feed - Gets you the profiles of other users on platform
 
-Status: ignored, interested, accepeted, rejected
+## Status: 
+            ignored, interested, accepeted, rejected

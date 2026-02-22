@@ -10,17 +10,13 @@ const { validateSignUp } = require("../utils/validate");
 authRouter.post("/signup", async (req, res) => {
   try {
     validateSignUp(req);
-    const { firstName, lastName, email, password } = req.body;
 
-    // Encryption
+    const { password } = req.body;
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    // console.log(hashedPassword);
 
-    // Creating Instance
     const user = new User({
-      firstName,
-      lastName,
-      email,
+      ...req.body,
       password: hashedPassword,
     });
 
