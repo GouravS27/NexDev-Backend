@@ -7,9 +7,15 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
 
-    res.send(user);
+    res.status(201).json({
+      success: true,
+      data: user,
+    });
   } catch (err) {
-    res.send("Error: " + err.message);
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
@@ -30,22 +36,26 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     );
 
     if (!editAllowed) {
-      throw new Error("Non Editable Field!");
+      return res.status(400).send("Requested field is not editable!");
     }
 
     const loggedInUser = req.user;
 
-    Object.keys(req.body).forEach((e) => (
-      loggedInUser[e] = req.body[e]
-    ));
+    Object.keys(req.body).forEach((e) => (loggedInUser[e] = req.body[e]));
 
     await loggedInUser.save();
 
-    res.send(`${loggedInUser.firstName} profile is updated!`);
+    // res.send(`${loggedInUser.firstName} profile is updated!`);
+    res.status(200).json({
+      success: true,
+      message: `${loggedInUser.firstName} profile is updated!`,
+    });
   } catch (err) {
-    res.send(err.message);
+    res.status(401).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
-
 
 module.exports = profileRouter;

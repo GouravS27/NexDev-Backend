@@ -20,11 +20,18 @@ authRouter.post("/signup", async (req, res) => {
       password: hashedPassword,
     });
 
-    await user.save();
+    const savedUser = await user.save();
 
-    res.send("User Added!");
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: savedUser,
+    });
   } catch (err) {
-    res.status(500).send(`Error: ${err.message}`);
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
@@ -35,19 +42,25 @@ authRouter.post("/login", async (req, res) => {
       email: email,
     });
     if (!user) {
-      throw new Error("Invalid Credentials");
+      return res.status(400).send("User Not Found!");
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
 
-    if (!isValidPassword) throw new Error("Wrong Password!");
+    if (!isValidPassword) return res.status(401).send("Wrong Password!")
 
     const token = await jwt.sign({ _id: user._id }, "SecretKey@123");
     res.cookie("token", token);
 
-    res.send(`User: ${user.firstName} is logged in!`);
+    res.status(200).json({
+      success: true,
+      message: `Welcome back, ${user.firstName}!`,
+    });
   } catch (err) {
-    res.status(500).send(`Error: ${err.message}`);
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
@@ -55,7 +68,7 @@ authRouter.post("/logout", async (req, res) => {
   res.cookie("token", null, {
     expires: new Date(Date.now()),
   });
-  res.send("Logout Successful!");
+  res.status(200).send("Logout Successful!");
 });
 
 module.exports = authRouter;

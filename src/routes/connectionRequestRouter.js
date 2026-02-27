@@ -18,11 +18,19 @@ connectionRequestRouter.post(
       const allowedStatus = ["ignored", "interested"];
 
       if (!allowedStatus.includes(status)) {
-        return res.send("Invalid status type!");
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status type!",
+        });
       }
 
       const validToUserID = await User.findById(toUserId);
-      if (!validToUserID) return res.send("User Not Found!");
+      if (!validToUserID) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found!",
+        });
+      }
 
       const existingConnectionReq = await ConnectionRequest.findOne({
         $or: [
@@ -31,10 +39,18 @@ connectionRequestRouter.post(
         ],
       });
 
-      if (fromUserId.equals(toUserId))
-        return res.send("Unable to Send to Self!");
+      if (fromUserId.toString() === toUserId) {
+        return res.status(400).json({
+          success: false,
+          message: "You cannot send request to yourself!",
+        });
+      }
 
-      if (existingConnectionReq) return res.send("Connection Already Exists!");
+      if (existingConnectionReq)
+        return res.status(409).json({
+          success: false,
+          message: "Connection already exists!",
+        });
 
       const connReq = new ConnectionRequest({
         fromUserId,
@@ -44,11 +60,15 @@ connectionRequestRouter.post(
 
       const data = await connReq.save();
 
-      res.send(
-        `Status is ${status} for ${req.user.firstName} and ${validToUserID.firstName} `,
-      );
+      res.status(201).json({
+        success: true,
+        message: `${req.user.firstName} marked ${status} for ${validToUser.firstName}`,
+      });
     } catch (err) {
-      res.send(err.message);
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      });
     }
   },
 );
@@ -65,7 +85,10 @@ connectionRequestRouter.post(
       const allowedStatus = ["accepted", "rejected"];
 
       if (!allowedStatus.includes(status))
-        return res.send("Invalid Status Type!");
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status type!",
+        });
 
       const connRequest = await ConnectionRequest.findOne({
         _id: requestId,
@@ -73,15 +96,22 @@ connectionRequestRouter.post(
         status: "interested",
       });
 
-      if (!connRequest) return res.send("Connection Request Not Found!");
+      if (!connRequest)
+        return res.status(404).json({
+          success: false,
+          message: "Connection Request Not Found!",
+        });
 
       connRequest.status = status;
 
       const data = await connRequest.save();
 
-      res.send(data);
+      res.status(200).json({
+        success: true,
+        data: data,
+      });
     } catch (err) {
-      res.send(err.message);
+      res.status(400).send(err.message);
     }
   },
 );
