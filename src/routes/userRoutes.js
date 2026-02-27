@@ -11,16 +11,20 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
-    const data = await ConnectionRequest
-      .find({
-        toUserId: loggedInUser,
-        status: "interested",
-      })
-      .populate("fromUserId", USER_SAFE_DATA);
+    const data = await ConnectionRequest.find({
+      toUserId: loggedInUser,
+      status: "interested",
+    }).populate("fromUserId", USER_SAFE_DATA);
 
-    res.send(data);
+    res.status(200).json({
+      sucess: true,
+      data: data,
+    });
   } catch (err) {
-    res.send(err.message);
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
@@ -28,17 +32,14 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
-    const connReq = await ConnectionRequest
-      .find({
-        $or: [
-          { fromUserId: loggedInUser, status: "accepted" },
-          { toUserId: loggedInUser, status: "accepted" },
-        ],
-      })
+    const connReq = await ConnectionRequest.find({
+      $or: [
+        { fromUserId: loggedInUser, status: "accepted" },
+        { toUserId: loggedInUser, status: "accepted" },
+      ],
+    })
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
-
-    // console.log(connReq)
 
     const data = connReq.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString())
@@ -46,7 +47,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       return row.fromUserId;
     });
 
-    res.json({ data });
+    res.status(200).json({ data: data });
   } catch (err) {
     res.send(err.message);
   }
@@ -62,11 +63,10 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const connReq = await ConnectionRequest
-      .find({
-        $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
-      })
-      // .select("firstName lastName");
+    const connReq = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    });
+    // .select("firstName lastName");
 
     const hideUsersFromFeed = new Set();
 
@@ -85,9 +85,9 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    res.json({ data: users });
+    res.status(200).json({ data: users });
   } catch (err) {
-    res.send(err.message);
+    res.status(400).send(err.message);
   }
 });
 
