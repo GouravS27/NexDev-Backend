@@ -47,15 +47,12 @@ authRouter.post("/login", async (req, res) => {
 
     const isValidPassword = await bcrypt.compare(password, user.password);
 
-    if (!isValidPassword) return res.status(401).send("Wrong Password!")
+    if (!isValidPassword) return res.status(401).send("Wrong Password!");
 
     const token = await jwt.sign({ _id: user._id }, "SecretKey@123");
     res.cookie("token", token);
 
-    res.status(200).json({
-      success: true,
-      message: `Welcome back, ${user.firstName}!`,
-    });
+    res.status(200).send(user);
   } catch (err) {
     res.status(400).json({
       success: false,

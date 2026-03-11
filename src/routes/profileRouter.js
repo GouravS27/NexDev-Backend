@@ -7,10 +7,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
 
-    res.status(201).json({
-      success: true,
-      data: user,
-    });
+    res.status(201).send(user);
   } catch (err) {
     res.status(400).json({
       success: false,
