@@ -62,7 +62,7 @@ connectionRequestRouter.post(
 
       res.status(201).json({
         success: true,
-        message: `${req.user.firstName} marked ${status} for ${validToUser.firstName}`,
+        message: `${req.user.firstName} marked ${status} for ${validToUserID.firstName}`,
       });
     } catch (err) {
       res.status(500).json({
